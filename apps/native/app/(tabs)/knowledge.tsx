@@ -49,8 +49,8 @@ export default function KnowledgeScreen() {
     async (offset = 0, append = false) => {
       try {
         const result = await fetchBookmarks({
-          type: activeType !== "all" ? activeType : undefined,
-          platform: activePlatform !== "all" ? activePlatform : undefined,
+          type: activeType === "all" ? undefined : activeType,
+          platform: activePlatform === "all" ? undefined : activePlatform,
           limit: 20,
           offset,
         })

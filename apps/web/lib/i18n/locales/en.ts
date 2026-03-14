@@ -12,6 +12,13 @@ export const en: TranslationDict = {
   sidebar: {
     subtitle: "Pocket Brain",
     aiChat: "AI Chat",
+    greeting: {
+      morning: "Good morning",
+      afternoon: "Good afternoon",
+      evening: "Good evening",
+      lateNight: "It's late",
+      subheading: "How can I help you today?",
+    },
     search: "Search",
     dashboard: "Dashboard",
     bookmarks: "Bookmarks",

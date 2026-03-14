@@ -40,6 +40,9 @@ export async function POST(request: Request) {
   // 获取当前用户
   const session = await auth.api.getSession({ headers: await headers() })
   const userId = session!.user!.id
+
+  //
+
   // 根据 content-type 区分处理方式
   const contentType = request.headers.get("content-type") ?? ""
 

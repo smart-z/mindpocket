@@ -180,7 +180,7 @@ function FilterBar({
 
       <div className="flex items-center gap-1">
         {platformFilters.map((filter) => {
-          const config = filter.value !== "all" ? PLATFORM_CONFIG[filter.value] : null
+          const config = filter.value === "all" ? null : PLATFORM_CONFIG[filter.value]
           const Icon = config?.icon
           return (
             <Button

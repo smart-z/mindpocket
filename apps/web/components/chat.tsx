@@ -10,18 +10,18 @@ import { ChatMessages } from "@/components/chat-messages"
 import { useT } from "@/lib/i18n"
 import { useChatStore } from "@/stores"
 
-function getGreeting(): string {
+function getGreeting(): "morning" | "afternoon" | "evening" | "lateNight" {
   const hour = new Date().getHours()
   if (hour >= 5 && hour < 12) {
-    return "早上好"
+    return "morning"
   }
   if (hour >= 12 && hour < 18) {
-    return "下午好"
+    return "afternoon"
   }
   if (hour >= 18 && hour < 23) {
-    return "晚上好"
+    return "evening"
   }
-  return "夜深了"
+  return "lateNight"
 }
 
 export function Chat({
@@ -140,9 +140,9 @@ export function Chat({
           <div className="animate-in fade-in slide-in-from-bottom-4 w-full max-w-2xl duration-500">
             <div className="mb-6 text-center">
               <h1 className="bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text font-bold text-3xl text-transparent">
-                {greeting}
+                {t.sidebar.greeting[greeting]}
               </h1>
-              <p className="mt-2 text-muted-foreground">有什么可以帮您的吗？</p>
+              <p className="mt-2 text-muted-foreground">{t.sidebar.greeting.subheading}</p>
             </div>
             <ChatInput
               input={input}

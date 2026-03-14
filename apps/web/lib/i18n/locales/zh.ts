@@ -10,6 +10,13 @@ export const zh = {
   sidebar: {
     subtitle: "口袋大脑",
     aiChat: "AI 对话",
+    greeting: {
+      morning: "早上好",
+      afternoon: "下午好",
+      evening: "晚上好",
+      lateNight: "夜深了",
+      subheading: "有什么可以帮您的吗？",
+    },
     search: "搜索",
     dashboard: "数据看板",
     bookmarks: "收藏",

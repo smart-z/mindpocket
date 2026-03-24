@@ -54,5 +54,5 @@ export async function ensureOk(response: Response) {
   const message = getErrorMessage(payload, response.status)
   const code = getErrorCode(response.status)
 
-  throw new CliError(code, message, payload, response.status === 401 ? 2 : 1)
+  throw new CliError(code, message, payload)
 }

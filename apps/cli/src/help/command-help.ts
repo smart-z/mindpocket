@@ -1,6 +1,69 @@
 import type { CommandHelpMeta } from "../lib/types.js"
 
 export const HELP_BY_COMMAND: Record<string, CommandHelpMeta> = {
+  doctor: {
+    command: "doctor",
+    summary: "Inspect CLI readiness, server reachability, and authentication state in one command.",
+    usage: ["mindpocket doctor [--server <url>]", "mindpocket status"],
+    arguments: [],
+    options: [
+      {
+        flags: "--server <url>",
+        description: "Optional. Override the configured MindPocket server URL.",
+      },
+      { flags: "--help", description: "Show command help." },
+    ],
+    authRequired: false,
+    output: [
+      "Success JSON fields: ok, data.cliVersion, data.nodeVersion, data.platform, data.server, data.auth, data.nextActions.",
+    ],
+    examples: ["mindpocket doctor", "mindpocket doctor --server https://mindpocket.example.com"],
+    errors: ["SERVER_UNREACHABLE", "API_ERROR", "INTERNAL_ERROR"],
+  },
+  version: {
+    command: "version",
+    summary: "Print the CLI package name, version, and protocol version.",
+    usage: ["mindpocket version"],
+    arguments: [],
+    options: [{ flags: "--help", description: "Show command help." }],
+    authRequired: false,
+    output: ["Success JSON fields: ok, data.name, data.version, data.protocolVersion."],
+    examples: ["mindpocket version"],
+    errors: ["INTERNAL_ERROR"],
+  },
+  schema: {
+    command: "schema",
+    summary: "Return machine-readable command metadata for agent discovery and orchestration.",
+    usage: ["mindpocket schema", "mindpocket schema <command>"],
+    arguments: [
+      {
+        name: "<command>",
+        description: "Optional. A command path such as `auth login` or `bookmarks create`.",
+      },
+    ],
+    options: [{ flags: "--help", description: "Show command help." }],
+    authRequired: false,
+    output: ["Success JSON fields: ok, data.cli, data.commands or data.command."],
+    examples: ["mindpocket schema", "mindpocket schema auth login"],
+    errors: ["VALIDATION_ERROR", "INTERNAL_ERROR"],
+  },
+  ping: {
+    command: "ping",
+    summary: "Check whether the configured MindPocket server is reachable.",
+    usage: ["mindpocket ping [--server <url>]"],
+    arguments: [],
+    options: [
+      {
+        flags: "--server <url>",
+        description: "Optional. Override the configured MindPocket server URL.",
+      },
+      { flags: "--help", description: "Show command help." },
+    ],
+    authRequired: false,
+    output: ["Success JSON fields: ok, data.serverUrl, data.reachable, data.latencyMs."],
+    examples: ["mindpocket ping", "mindpocket ping --server https://mindpocket.example.com"],
+    errors: ["SERVER_UNREACHABLE", "API_ERROR", "INTERNAL_ERROR"],
+  },
   auth: {
     command: "auth",
     summary: "Authentication commands for logging in, checking session state, and logging out.",
@@ -22,13 +85,27 @@ export const HELP_BY_COMMAND: Record<string, CommandHelpMeta> = {
         flags: "--server <url>",
         description: "Optional. Override the configured MindPocket server URL.",
       },
+      {
+        flags: "--no-open",
+        description: "Optional. Do not attempt to open the verification URL in a browser.",
+      },
+      {
+        flags: "--device-code-only",
+        description:
+          "Optional. Request device authorization details without opening a browser or polling for a token.",
+      },
       { flags: "--help", description: "Show command help." },
     ],
     authRequired: false,
-    output: ["Success JSON fields: ok, data.serverUrl, data.user, data.expiresAt."],
+    output: [
+      "Success JSON fields: ok, data.serverUrl, data.user, data.expiresAt.",
+      "When --device-code-only is used: ok, data.serverUrl, data.deviceCode, data.userCode, data.verificationUri, data.verificationUriComplete, data.expiresIn, data.interval.",
+    ],
     examples: [
       "mindpocket auth login",
       "mindpocket auth login --server https://mindpocket.example.com",
+      "mindpocket auth login --no-open",
+      "mindpocket auth login --device-code-only",
     ],
     errors: ["SERVER_UNREACHABLE", "AUTH_TIMEOUT", "AUTH_DENIED", "VALIDATION_ERROR", "API_ERROR"],
   },
@@ -119,6 +196,8 @@ export const HELP_BY_COMMAND: Record<string, CommandHelpMeta> = {
     usage: [
       "mindpocket bookmarks list [--limit <n>] [--offset <n>] [--search <query>]",
       "mindpocket bookmarks get <id>",
+      "mindpocket bookmarks update <id> [--title <title>] [--folder-id <id>]",
+      "mindpocket bookmarks delete <id>",
       "mindpocket bookmarks create --url <url> [--title <title>] [--folder-id <id>]",
     ],
     arguments: [],
@@ -179,10 +258,42 @@ export const HELP_BY_COMMAND: Record<string, CommandHelpMeta> = {
     ],
     errors: ["AUTH_REQUIRED", "VALIDATION_ERROR", "SERVER_UNREACHABLE", "API_ERROR"],
   },
+  "bookmarks update": {
+    command: "bookmarks update",
+    summary: "Update mutable fields on an existing bookmark.",
+    usage: ["mindpocket bookmarks update <id> [--title <title>] [--folder-id <id>]"],
+    arguments: [{ name: "<id>", description: "Required. Bookmark ID." }],
+    options: [
+      { flags: "--title <title>", description: "Optional. Replace the bookmark title." },
+      {
+        flags: "--folder-id <id>",
+        description: "Optional. Move the bookmark into a specific folder.",
+      },
+      { flags: "--help", description: "Show command help." },
+    ],
+    authRequired: true,
+    output: ["Success JSON fields: ok, data.success."],
+    examples: [
+      "mindpocket bookmarks update bk_123 --title Example",
+      "mindpocket bookmarks update bk_123 --folder-id folder_123",
+    ],
+    errors: ["AUTH_REQUIRED", "VALIDATION_ERROR", "SERVER_UNREACHABLE", "API_ERROR"],
+  },
+  "bookmarks delete": {
+    command: "bookmarks delete",
+    summary: "Delete a bookmark by ID.",
+    usage: ["mindpocket bookmarks delete <id>"],
+    arguments: [{ name: "<id>", description: "Required. Bookmark ID." }],
+    options: [{ flags: "--help", description: "Show command help." }],
+    authRequired: true,
+    output: ["Success JSON fields: ok, data.deleted, data.id."],
+    examples: ["mindpocket bookmarks delete bk_123"],
+    errors: ["AUTH_REQUIRED", "SERVER_UNREACHABLE", "API_ERROR"],
+  },
   folders: {
     command: "folders",
     summary: "Folder commands for listing bookmark folders visible to the authenticated user.",
-    usage: ["mindpocket folders list"],
+    usage: ["mindpocket folders list", "mindpocket folders get <id>"],
     arguments: [],
     options: [{ flags: "--help", description: "Show command help." }],
     authRequired: true,
@@ -202,6 +313,17 @@ export const HELP_BY_COMMAND: Record<string, CommandHelpMeta> = {
       "Success JSON fields: ok, data.folders[].id, data.folders[].name, data.folders[].items.",
     ],
     examples: ["mindpocket folders list"],
+    errors: ["AUTH_REQUIRED", "SERVER_UNREACHABLE", "API_ERROR"],
+  },
+  "folders get": {
+    command: "folders get",
+    summary: "Fetch a single folder with a small bookmark preview.",
+    usage: ["mindpocket folders get <id>"],
+    arguments: [{ name: "<id>", description: "Required. Folder ID." }],
+    options: [{ flags: "--help", description: "Show command help." }],
+    authRequired: true,
+    output: ["Success JSON fields: ok, data.folder.id, data.folder.name, data.folder.items."],
+    examples: ["mindpocket folders get folder_123"],
     errors: ["AUTH_REQUIRED", "SERVER_UNREACHABLE", "API_ERROR"],
   },
 }

@@ -34,7 +34,8 @@ MindPocket organizes your bookmarks with AI-powered RAG content summarization an
 2. **One-Click Deploy**: Set up your personal bookmark system in minutes
 3. **Multi-Platform**: Web + Mobile + Browser Extension
 4. **AI Enhanced**: RAG and AI Agent for smart tagging and summarization
-5. **Open Source**: Fully open source, your data belongs to you
+5. **CLI Ready**: Official CLI makes it easy to integrate with external agents like OpenClaw
+6. **Open Source**: Fully open source, your data belongs to you
 
 ## 🎨 VIBE CODING
 
@@ -175,6 +176,9 @@ pnpm add -g mindpocket
 ### Quick Start
 
 ```bash
+mindpocket version
+mindpocket schema
+mindpocket doctor
 mindpocket --help
 mindpocket config set server https://your-domain.com
 mindpocket auth login
@@ -182,51 +186,39 @@ mindpocket user me
 mindpocket bookmarks list
 ```
 
-### Upgrade
+Recommended agent flow:
 
 ```bash
-npm install -g mindpocket@latest
+mindpocket version
+mindpocket schema
+mindpocket doctor
+mindpocket auth login --no-open
 ```
 
-### Uninstall
+### Agent Skill
+
+MindPocket also ships a repository-scoped agent skill named `mindpocket`. The skill teaches compatible agents to discover commands with `schema`, verify readiness with `doctor`, configure the server, handle auth safely, and operate bookmark and folder workflows through the published CLI.
+
+Install it with `skills.sh` from this repository:
 
 ```bash
-npm uninstall -g mindpocket
+npx skills add https://github.com/jihe520/mindpocket --skill mindpocket
 ```
 
-### Help for AI Agents
-
-Each command includes structured `--help` output so an AI agent can inspect:
-
-- what the command does
-- required arguments and options
-- whether login is required
-- output JSON fields
-- examples
-- common error codes
-
-Examples:
+For local testing from a checkout:
 
 ```bash
-mindpocket --help
-mindpocket auth --help
-mindpocket bookmarks create --help
+npx skills add ./skills/mindpocket
 ```
 
-### CLI Release
+The skill is procedural guidance layered on top of the npm CLI, so users still need the `mindpocket` command available locally.
 
-The npm package is published automatically from GitHub Actions when a tag matching `cli-vX.Y.Z` is pushed.
+Example prompts:
 
-Examples:
-
-```bash
-git tag cli-v1.0.0
-git push origin cli-v1.0.0
+```text
+Use the `mindpocket` skill to list my latest 10 bookmarks.
+Use the `mindpocket` skill to help me configure my server and log in.
 ```
-
-GitHub repository secrets must include:
-
-- `NPM_TOKEN`
 
 ## 🛠 Tech Stack
 

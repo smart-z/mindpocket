@@ -12,12 +12,7 @@ export async function getAuthenticatedClient() {
   }
 
   if (!state.session?.accessToken) {
-    throw new CliError(
-      "AUTH_REQUIRED",
-      "Not logged in. Run `mindpocket auth login` first.",
-      undefined,
-      2
-    )
+    throw new CliError("AUTH_REQUIRED", "Not logged in. Run `mindpocket auth login` first.")
   }
 
   return {
@@ -39,9 +34,7 @@ export async function validateSessionOrClear() {
       await clearSession()
       throw new CliError(
         "AUTH_REQUIRED",
-        "Stored session is no longer valid. Run `mindpocket auth login` again.",
-        undefined,
-        2
+        "Stored session is no longer valid. Run `mindpocket auth login` again."
       )
     }
 

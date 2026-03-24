@@ -26,3 +26,28 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_source=github.com&utm_medium=referral&utm_campaign=turborepo-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Testing
+
+Run unit tests and route tests:
+
+```bash
+pnpm test
+pnpm test:watch
+pnpm test:coverage
+```
+
+Run Playwright E2E:
+
+```bash
+pnpm test:e2e
+```
+
+E2E login uses environment variables:
+
+```env
+E2E_TEST_EMAIL=your-test-account@example.com
+E2E_TEST_PASSWORD=your-test-password
+```
+
+If those variables are missing, the login E2E test is skipped by design.

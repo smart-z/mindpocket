@@ -2,12 +2,56 @@ import { and, eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 import { db } from "@/db/client"
+import { bookmark } from "@/db/schema/bookmark"
 import { folder } from "@/db/schema/folder"
 import { auth } from "@/lib/auth"
 
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const userId = session.user.id
+  const { id } = await params
+
+  const [item] = await db
+    .select({
+      id: folder.id,
+      name: folder.name,
+      description: folder.description,
+      emoji: folder.emoji,
+      sortOrder: folder.sortOrder,
+    })
+    .from(folder)
+    .where(and(eq(folder.id, id), eq(folder.userId, userId)))
+    .limit(1)
+
+  if (!item) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
+
+  const items = await db
+    .select({ id: bookmark.id, title: bookmark.title })
+    .from(bookmark)
+    .where(eq(bookmark.folderId, id))
+    .limit(5)
+
+  return NextResponse.json({
+    folder: {
+      ...item,
+      items,
+    },
+  })
+}
+
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth.api.getSession({ headers: await headers() })
-  const userId = session!.user!.id
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const userId = session.user.id
 
   const { id } = await params
   const body = await request.json()

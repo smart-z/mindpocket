@@ -53,3 +53,66 @@ export interface CommandHelpMeta {
   examples: string[]
   errors: string[]
 }
+
+export interface CommandSchemaArgument {
+  name: string
+  description: string
+  required: boolean
+}
+
+export interface CommandSchemaOption {
+  name: string
+  type: string
+  required: boolean
+  description: string
+  flags: string
+}
+
+export interface CommandSchema {
+  name: string
+  summary: string
+  authRequired: boolean
+  arguments: CommandSchemaArgument[]
+  options: CommandSchemaOption[]
+  output: string[]
+  errors: string[]
+}
+
+export interface CliSchema {
+  cli: {
+    name: string
+    version: string
+    protocolVersion: number
+  }
+  commands: CommandSchema[]
+}
+
+export interface DoctorResult {
+  cliVersion: string
+  nodeVersion: string
+  platform: string
+  server: {
+    value: string
+    source: "flag" | "env" | "config" | "default"
+    reachable: boolean
+  }
+  auth: {
+    hasStoredSession: boolean
+    authenticated: boolean
+    user: StoredUser | null
+    expiresAt: string | null
+  }
+  nextActions: string[]
+}
+
+export interface VersionResult {
+  name: string
+  version: string
+  protocolVersion: number
+}
+
+export interface PingResult {
+  serverUrl: string
+  reachable: boolean
+  latencyMs: number
+}

@@ -36,6 +36,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/bin.ts",
+    "test": "tsx --test tests/**/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepack": "pnpm build"
   },

@@ -2,12 +2,19 @@ import { authLoginCommand } from "./commands/auth-login.js"
 import { authLogoutCommand } from "./commands/auth-logout.js"
 import { authStatusCommand } from "./commands/auth-status.js"
 import { bookmarksCreateCommand } from "./commands/bookmarks-create.js"
+import { bookmarksDeleteCommand } from "./commands/bookmarks-delete.js"
 import { bookmarksGetCommand } from "./commands/bookmarks-get.js"
 import { bookmarksListCommand } from "./commands/bookmarks-list.js"
+import { bookmarksUpdateCommand } from "./commands/bookmarks-update.js"
 import { configGetCommand } from "./commands/config-get.js"
 import { configSetServerCommand } from "./commands/config-set-server.js"
+import { doctorCommand } from "./commands/doctor.js"
+import { foldersGetCommand } from "./commands/folders-get.js"
 import { foldersListCommand } from "./commands/folders-list.js"
+import { pingCommand } from "./commands/ping.js"
+import { schemaCommand } from "./commands/schema.js"
 import { userMeCommand } from "./commands/user-me.js"
+import { versionCommand } from "./commands/version.js"
 import { HELP_BY_COMMAND } from "./help/command-help.js"
 import { renderCommandHelp, renderRootHelp } from "./help/render-help.js"
 import { CliError, toCliError } from "./lib/errors.js"
@@ -53,6 +60,14 @@ function printRootHelp() {
   process.stdout.write(`${renderRootHelp()}\n`)
 }
 
+function requireArgument(value: string | undefined, message: string) {
+  if (!value) {
+    throw new CliError("VALIDATION_ERROR", message)
+  }
+
+  return value
+}
+
 async function runAuth(args: string[]) {
   if (args[0] !== "auth") {
     return null
@@ -67,7 +82,14 @@ async function runAuth(args: string[]) {
       return 0
     }
 
-    printJson(await authLoginCommand({ server: parseFlags(subcommandArgs).server }))
+    const flags = parseFlags(subcommandArgs)
+    printJson(
+      await authLoginCommand({
+        server: flags.server,
+        noOpen: flags["no-open"] === "true",
+        deviceCodeOnly: flags["device-code-only"] === "true",
+      })
+    )
     return 0
   }
 
@@ -162,7 +184,7 @@ async function runUser(args: string[]) {
   return null
 }
 
-async function runBookmarks(args: string[]) {
+function runBookmarks(args: string[]) {
   if (args[0] !== "bookmarks") {
     return null
   }
@@ -171,55 +193,23 @@ async function runBookmarks(args: string[]) {
   const subcommandArgs = args.slice(2)
 
   if (subcommand === "list") {
-    if (hasHelp(subcommandArgs)) {
-      helpFor("bookmarks list")
-      return 0
-    }
-
-    const flags = parseFlags(subcommandArgs)
-    printJson(
-      await bookmarksListCommand({
-        limit: flags.limit,
-        offset: flags.offset,
-        search: flags.search,
-        folderId: flags["folder-id"],
-        type: flags.type,
-        platform: flags.platform,
-      })
-    )
-    return 0
+    return runBookmarksList(subcommandArgs)
   }
 
   if (subcommand === "get") {
-    if (hasHelp(subcommandArgs)) {
-      helpFor("bookmarks get")
-      return 0
-    }
+    return runBookmarksGet(subcommandArgs)
+  }
 
-    const id = args[2]
-    if (!id) {
-      throw new CliError("VALIDATION_ERROR", "Missing <id> argument for `bookmarks get`.")
-    }
+  if (subcommand === "update") {
+    return runBookmarksUpdate(subcommandArgs)
+  }
 
-    printJson(await bookmarksGetCommand(id))
-    return 0
+  if (subcommand === "delete") {
+    return runBookmarksDelete(subcommandArgs)
   }
 
   if (subcommand === "create") {
-    if (hasHelp(subcommandArgs)) {
-      helpFor("bookmarks create")
-      return 0
-    }
-
-    const flags = parseFlags(subcommandArgs)
-    printJson(
-      await bookmarksCreateCommand({
-        url: flags.url,
-        title: flags.title,
-        folderId: flags["folder-id"],
-      })
-    )
-    return 0
+    return runBookmarksCreate(subcommandArgs)
   }
 
   if (args.length === 1 || hasHelp(args.slice(1))) {
@@ -230,9 +220,96 @@ async function runBookmarks(args: string[]) {
   return null
 }
 
+async function runBookmarksList(args: string[]) {
+  if (hasHelp(args)) {
+    helpFor("bookmarks list")
+    return 0
+  }
+
+  const flags = parseFlags(args)
+  printJson(
+    await bookmarksListCommand({
+      limit: flags.limit,
+      offset: flags.offset,
+      search: flags.search,
+      folderId: flags["folder-id"],
+      type: flags.type,
+      platform: flags.platform,
+    })
+  )
+  return 0
+}
+
+async function runBookmarksGet(args: string[]) {
+  if (hasHelp(args.slice(1))) {
+    helpFor("bookmarks get")
+    return 0
+  }
+
+  const id = requireArgument(args[0], "Missing <id> argument for `bookmarks get`.")
+  printJson(await bookmarksGetCommand(id))
+  return 0
+}
+
+async function runBookmarksUpdate(args: string[]) {
+  if (hasHelp(args.slice(1))) {
+    helpFor("bookmarks update")
+    return 0
+  }
+
+  const id = requireArgument(args[0], "Missing <id> argument for `bookmarks update`.")
+  const flags = parseFlags(args.slice(1))
+  printJson(
+    await bookmarksUpdateCommand(id, {
+      title: flags.title,
+      folderId: flags["folder-id"],
+    })
+  )
+  return 0
+}
+
+async function runBookmarksDelete(args: string[]) {
+  if (hasHelp(args.slice(1))) {
+    helpFor("bookmarks delete")
+    return 0
+  }
+
+  const id = requireArgument(args[0], "Missing <id> argument for `bookmarks delete`.")
+  printJson(await bookmarksDeleteCommand(id))
+  return 0
+}
+
+async function runBookmarksCreate(args: string[]) {
+  if (hasHelp(args)) {
+    helpFor("bookmarks create")
+    return 0
+  }
+
+  const flags = parseFlags(args)
+  printJson(
+    await bookmarksCreateCommand({
+      url: flags.url,
+      title: flags.title,
+      folderId: flags["folder-id"],
+    })
+  )
+  return 0
+}
+
 async function runFolders(args: string[]) {
   if (args[0] !== "folders") {
     return null
+  }
+
+  if (args[1] === "get") {
+    if (hasHelp(args.slice(2))) {
+      helpFor("folders get")
+      return 0
+    }
+
+    const id = requireArgument(args[2], "Missing <id> argument for `folders get`.")
+    printJson(await foldersGetCommand(id))
+    return 0
   }
 
   if (args[1] === "list") {
@@ -251,6 +328,64 @@ async function runFolders(args: string[]) {
   }
 
   return null
+}
+
+async function runDoctor(args: string[]) {
+  if (args[0] !== "doctor" && !(args[0] === "status" && args.length === 1)) {
+    return null
+  }
+
+  if (hasHelp(args.slice(1))) {
+    helpFor("doctor")
+    return 0
+  }
+
+  const flags = parseFlags(args.slice(1))
+  printJson(await doctorCommand({ server: flags.server }))
+  return 0
+}
+
+async function runVersion(args: string[]) {
+  if (args[0] !== "version") {
+    return null
+  }
+
+  if (hasHelp(args.slice(1))) {
+    helpFor("version")
+    return 0
+  }
+
+  printJson(await versionCommand())
+  return 0
+}
+
+async function runSchema(args: string[]) {
+  if (args[0] !== "schema") {
+    return null
+  }
+
+  if (hasHelp(args.slice(1))) {
+    helpFor("schema")
+    return 0
+  }
+
+  printJson(await schemaCommand(args.slice(1).filter((arg) => !arg.startsWith("-"))))
+  return 0
+}
+
+async function runPing(args: string[]) {
+  if (args[0] !== "ping") {
+    return null
+  }
+
+  if (hasHelp(args.slice(1))) {
+    helpFor("ping")
+    return 0
+  }
+
+  const flags = parseFlags(args.slice(1))
+  printJson(await pingCommand({ server: flags.server }))
+  return 0
 }
 
 function runContextualHelp(args: string[]) {
@@ -277,6 +412,10 @@ export async function runCli(argv: string[]) {
 
   try {
     const result =
+      (await runDoctor(args)) ??
+      (await runVersion(args)) ??
+      (await runSchema(args)) ??
+      (await runPing(args)) ??
       (await runAuth(args)) ??
       (await runConfig(args)) ??
       (await runUser(args)) ??

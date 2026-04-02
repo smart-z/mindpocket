@@ -79,6 +79,168 @@ MindPocket 将你的收藏内容进行分类存储，并通过 AI Agent 进行 R
    - 访问你的部署地址
    - 注册第一个账号即可开始使用(第一个账号默认管理员账户，注册后关闭注册功能，尽快注册)
 
+## 🐳 Docker 部署
+
+### 前置要求
+
+- [Docker](https://docs.docker.com/get-docker/) 和 [Docker Compose](https://docs.docker.com/compose/install/)
+
+### 快速启动
+
+```bash
+# 复制并编辑环境变量
+cp .env.example .env
+
+# 构建并启动所有服务
+docker compose up -d
+```
+
+启动后访问 http://localhost:3000 即可使用。
+
+### 服务说明
+
+| 服务 | 说明 | 默认端口 |
+|------|------|----------|
+| `mindpocket` | Next.js Web 应用 | 3000 |
+| `postgres` | pgvector/PostgreSQL 17 数据库 | 5432（仅容器内部） |
+
+### 环境变量
+
+主要环境变量（完整列表见 `.env.example`）：
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `PORT` | `3000` | Web 服务映射到宿主机的端口 |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | 应用公开访问地址 |
+| `BETTER_AUTH_SECRET` | `mindpocket-local-dev-secret` | 认证密钥，**生产环境务必替换** |
+| `POSTGRES_USER` | `mindpocket` | 内置 PostgreSQL 用户名 |
+| `POSTGRES_PASSWORD` | `mindpocket` | 内置 PostgreSQL 密码 |
+| `POSTGRES_DB` | `mindpocket` | 内置 PostgreSQL 数据库名 |
+| `DATABASE_URL` | 自动拼接 | 外部数据库连接串，设置后将跳过内置 PostgreSQL 配置 |
+
+### 使用外部数据库
+
+直接设置 `DATABASE_URL` 即可：
+
+```bash
+DATABASE_URL=postgresql://user:password@db.example.com:5432/mindpocket?sslmode=require
+```
+
+也可以通过 `DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASSWORD`、`DB_NAME` 分别配置。
+
+### 常用命令
+
+```bash
+# 后台启动
+docker compose up -d
+
+# 查看日志
+docker compose logs -f
+
+# 仅查看 Web 服务日志
+docker compose logs -f mindpocket
+
+# 停止服务
+docker compose down
+
+# 停止服务并清除数据卷
+docker compose down -v
+
+# 重新构建镜像
+docker compose up -d --build
+```
+
+### 容器启动流程
+
+容器启动时会自动执行以下操作（见 `docker-entrypoint.sh`）：
+
+1. 根据环境变量拼接 `DATABASE_URL`（如未直接提供）
+2. 确保 PostgreSQL 扩展已安装（`pgvector` 等）
+3. 通过 Drizzle ORM 自动推送数据库 schema
+4. 启动 Next.js standalone 服务
+
+## 🐳 Docker 部署（仅 Web 应用）
+
+> Docker 部署目前仅包含 **Web 应用**（`apps/web`），不包含移动端和浏览器插件。
+
+### 前置要求
+
+- [Docker](https://docs.docker.com/get-docker/) 和 [Docker Compose](https://docs.docker.com/compose/install/)
+
+### 快速启动
+
+```bash
+# 复制并编辑环境变量
+cp .env.example .env
+
+# 构建并启动所有服务
+docker compose up -d
+```
+
+启动后访问 http://localhost:3000 即可使用。
+
+### 服务说明
+
+| 服务 | 说明 | 默认端口 |
+|------|------|----------|
+| `mindpocket` | Next.js Web 应用（`apps/web`） | 3000 |
+| `postgres` | pgvector/PostgreSQL 17 数据库 | 5432（仅容器内部） |
+
+### 环境变量
+
+主要环境变量（完整列表见 `.env.example`）：
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `PORT` | `3000` | Web 服务映射到宿主机的端口 |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | 应用公开访问地址 |
+| `BETTER_AUTH_SECRET` | `mindpocket-local-dev-secret` | 认证密钥，**生产环境务必替换** |
+| `POSTGRES_USER` | `mindpocket` | 内置 PostgreSQL 用户名 |
+| `POSTGRES_PASSWORD` | `mindpocket` | 内置 PostgreSQL 密码 |
+| `POSTGRES_DB` | `mindpocket` | 内置 PostgreSQL 数据库名 |
+| `DATABASE_URL` | 自动拼接 | 外部数据库连接串，设置后将跳过内置 PostgreSQL 配置 |
+
+### 使用外部数据库
+
+直接设置 `DATABASE_URL` 即可：
+
+```bash
+DATABASE_URL=postgresql://user:password@db.example.com:5432/mindpocket?sslmode=require
+```
+
+也可以通过 `DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASSWORD`、`DB_NAME` 分别配置。
+
+### 常用命令
+
+```bash
+# 后台启动
+docker compose up -d
+
+# 查看日志
+docker compose logs -f
+
+# 仅查看 Web 服务日志
+docker compose logs -f mindpocket
+
+# 停止服务
+docker compose down
+
+# 停止服务并清除数据卷
+docker compose down -v
+
+# 重新构建镜像
+docker compose up -d --build
+```
+
+### 容器启动流程
+
+容器启动时会自动执行以下操作（见 `docker-entrypoint.sh`）：
+
+1. 根据环境变量拼接 `DATABASE_URL`（如未直接提供）
+2. 确保 PostgreSQL 扩展已安装（`pgvector` 等）
+3. 通过 Drizzle ORM 自动推送数据库 schema
+4. 启动 Next.js standalone 服务
+
 ## 💻 本地开发
 
 ### 环境要求

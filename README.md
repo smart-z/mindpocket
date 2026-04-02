@@ -77,6 +77,168 @@ This is a pure **VIBE CODING** project:
    - Visit your deployment URL
    - Register your first account to start using
 
+## 🐳 Docker Deployment
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Quick Start
+
+```bash
+# Copy and edit environment variables
+cp .env.example .env
+
+# Build and start all services
+docker compose up -d
+```
+
+Visit http://localhost:3000 to start using.
+
+### Services
+
+| Service | Description | Default Port |
+|---------|-------------|--------------|
+| `mindpocket` | Next.js Web App | 3000 |
+| `postgres` | pgvector/PostgreSQL 17 | 5432 (internal only) |
+
+### Environment Variables
+
+Key variables (see `.env.example` for full list):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | Host port for the web service |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | Public URL of the app |
+| `BETTER_AUTH_SECRET` | `mindpocket-local-dev-secret` | Auth secret, **must replace in production** |
+| `POSTGRES_USER` | `mindpocket` | Built-in PostgreSQL username |
+| `POSTGRES_PASSWORD` | `mindpocket` | Built-in PostgreSQL password |
+| `POSTGRES_DB` | `mindpocket` | Built-in PostgreSQL database name |
+| `DATABASE_URL` | auto-generated | External DB connection string; overrides built-in PostgreSQL config |
+
+### Using an External Database
+
+Set `DATABASE_URL` directly:
+
+```bash
+DATABASE_URL=postgresql://user:password@db.example.com:5432/mindpocket?sslmode=require
+```
+
+Or configure individual parts: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.
+
+### Common Commands
+
+```bash
+# Start in background
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# View web service logs only
+docker compose logs -f mindpocket
+
+# Stop services
+docker compose down
+
+# Stop and remove data volumes
+docker compose down -v
+
+# Rebuild image
+docker compose up -d --build
+```
+
+### Container Startup Flow
+
+On startup, the container automatically (see `docker-entrypoint.sh`):
+
+1. Assembles `DATABASE_URL` from env vars (if not provided directly)
+2. Ensures PostgreSQL extensions are installed (`pgvector`, etc.)
+3. Pushes database schema via Drizzle ORM
+4. Starts the Next.js standalone server
+
+## 🐳 Docker Deployment (Web Only)
+
+> Docker deployment currently covers only the **Web application** (`apps/web`). Mobile app and browser extension are not included.
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Quick Start
+
+```bash
+# Copy and edit environment variables
+cp .env.example .env
+
+# Build and start all services
+docker compose up -d
+```
+
+Visit http://localhost:3000 to start using.
+
+### Services
+
+| Service | Description | Default Port |
+|---------|-------------|--------------|
+| `mindpocket` | Next.js Web App (`apps/web`) | 3000 |
+| `postgres` | pgvector/PostgreSQL 17 | 5432 (internal only) |
+
+### Environment Variables
+
+Key variables (see `.env.example` for full list):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | Host port for the web service |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | Public URL of the app |
+| `BETTER_AUTH_SECRET` | `mindpocket-local-dev-secret` | Auth secret, **must replace in production** |
+| `POSTGRES_USER` | `mindpocket` | Built-in PostgreSQL username |
+| `POSTGRES_PASSWORD` | `mindpocket` | Built-in PostgreSQL password |
+| `POSTGRES_DB` | `mindpocket` | Built-in PostgreSQL database name |
+| `DATABASE_URL` | auto-generated | External DB connection string; overrides built-in PostgreSQL config |
+
+### Using an External Database
+
+Set `DATABASE_URL` directly:
+
+```bash
+DATABASE_URL=postgresql://user:password@db.example.com:5432/mindpocket?sslmode=require
+```
+
+Or configure individual parts: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.
+
+### Common Commands
+
+```bash
+# Start in background
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# View web service logs only
+docker compose logs -f mindpocket
+
+# Stop services
+docker compose down
+
+# Stop and remove data volumes
+docker compose down -v
+
+# Rebuild image
+docker compose up -d --build
+```
+
+### Container Startup Flow
+
+On startup, the container automatically (see `docker-entrypoint.sh`):
+
+1. Assembles `DATABASE_URL` from env vars (if not provided directly)
+2. Ensures PostgreSQL extensions are installed (`pgvector`, etc.)
+3. Pushes database schema via Drizzle ORM
+4. Starts the Next.js standalone server
+
 ## 💻 Local Development
 
 ### Requirements
